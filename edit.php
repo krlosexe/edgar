@@ -46,29 +46,30 @@
 			<div class="col-md-12">
 			<h2><span class="glyphicon glyphicon-edit"></span> Editar Cotización</h2>
 			<hr>
-			<form class="form-horizontal" role="form" id="datos_cotizacion">
+			<form class="form-horizontal" role="form" id="datos_cotizacion" method="post" action="save.php">
+				<input type="hidden" name="id_cotizacion" value="<?= $_GET['id']?>">
 				<div class="form-group row">
 				  <label for="atencion" class="col-md-1 control-label">Atención:</label>
 				  <div class="col-md-3">
-					  <input type="text" class="form-control" id="atencion" placeholder="Atención" required value="<?= $row->atencion ?>">
+					  <input type="text" class="form-control" name ="atencion" id="atencion" placeholder="Atención" required value="<?= $row->atencion ?>">
 				  </div>
 				  <label for="tel1" class="col-md-1 control-label">Teléfono:</label>
 							<div class="col-md-2">
-								<input type="text" class="form-control" id="tel1" placeholder="Teléfono" required value="<?= $row->tel1 ?>">
+								<input type="text" class="form-control" name ="tel1" id="tel1" placeholder="Teléfono" required value="<?= $row->tel1 ?>">
 							</div>
 				</div>
 						<div class="form-group row">
 							<label for="empresa" class="col-md-1 control-label">Empresa:</label>
 							<div class="col-md-3">
-								<input type="text" class="form-control" id="empresa" placeholder="Nombre de la empresa" value="<?= $row->empresa ?>">
+								<input type="text" class="form-control" name ="empresa" id="empresa" placeholder="Nombre de la empresa" value="<?= $row->empresa ?>">
 							</div>
 							<label for="tel2" class="col-md-1 control-label">Teléfono:</label>
 							<div class="col-md-2">
-								<input type="text" class="form-control" id="tel2" placeholder="Teléfono empresa" value="<?= $row->tel2 ?>">
+								<input type="text" class="form-control" name ="tel2" id="tel2" placeholder="Teléfono empresa" value="<?= $row->tel2 ?>">
 							</div>
 							<label for="email" class="col-md-1 control-label">Email:</label>
 							<div class="col-md-3">
-								<input type="email" class="form-control" id="email" placeholder="Email" value="<?= $row->email ?>">
+								<input type="email" class="form-control" name ="email" id="email" placeholder="Email" value="<?= $row->email ?>">
 							</div>
 						</div>
 				
@@ -78,11 +79,11 @@
 						<button type="button" class="btn btn-info" data-toggle="modal" data-target="#myModal">
 						 <span class="glyphicon glyphicon-plus"></span> Agregar productos
 						</button>
-						<button type="submit" class="btn btn-default">
-						  <span class="glyphicon glyphicon-print"></span> Imprimir
-						</button>
 					</div>	
 				</div>
+
+				<button type="submit" class="btn btn-info ">Guardar</button>
+
 			</form>
 			<br><br>
 		<div id="resultados" class='col-md-12'>
@@ -107,7 +108,7 @@
 					$query_detalle_producto  = $mysqli->query("SELECT * FROM productos_demo WHERE id_producto = '$id_producto'");
 					$result_detalle_producto = $query_detalle_producto->fetch_object();
 	
-
+					$id_tmp          = $producto->id_detalle_cotizacion; 
 					$codigo_producto = $result_detalle_producto->codigo_producto; 
 					$nombre_producto = $result_detalle_producto->nombre_producto; 
                     $unidad          = $result_detalle_producto->unidad_medida_producto; 
@@ -126,7 +127,7 @@
 			            <td><?php echo $alto_producto;?></td>
 						<td class='text-right'><?php echo $precio_venta;?></td>
 						<td class='text-right'><?php echo $precio_venta;?></td>
-						<td class='text-center'><a href="#" onclick="eliminar('<?php echo $id_tmp ?>')"><i class="glyphicon glyphicon-trash"></i></a></td>
+						<td class='text-center'><a  onclick="eliminar(this, '<?php echo $id_tmp ?>')"><i class="glyphicon glyphicon-trash"></i></a></td>
 					</tr>	
 					<?php
 				}
@@ -137,6 +138,9 @@
 					?></span></td>
 				</tr>
 			  </table>
+
+ 
+
 			</div>
 		</div><!-- Carga los datos ajax -->
 	
@@ -187,7 +191,7 @@
 			var q= $("#q").val();
 			$("#loader").fadeIn('slow');
 			$.ajax({
-				url:'./ajax/productos_cotizacion.php?action=ajax&page='+page+'&q='+q,
+				url:'./ajax/add_productos_cotizacion.php?action=ajax&page='+page+'&q='+q+'&id=<?= $_GET["id"]?>',
 				 beforeSend: function(objeto){
 				 $('#loader').html('<img src="./img/ajax-loader.gif"> Cargando...');
 			  },
@@ -200,7 +204,7 @@
 		}
 	</script>
 	<script>
-	function agregar (id)
+	function agregar (id, id_coti)
 		{
 			var precio_venta=document.getElementById('precio_venta_'+id).value;
 			var cantidad=document.getElementById('cantidad_'+id).value;
@@ -244,8 +248,8 @@
 			
 			$.ajax({
         type: "POST",
-        url: "./ajax/agregar_cotizador.php",
-        data: "id="+id+"&precio_venta="+precio_venta+"&cantidad="+cantidad+"&ancho="+ancho+"&alto="+alto+"&unidad="+unidad,
+        url: "./ajax/agregar_producto_cotizador.php",
+        data: "id="+id+"&precio_venta="+precio_venta+"&cantidad="+cantidad+"&ancho="+ancho+"&alto="+alto+"&unidad="+unidad+"&id_coti="+id_coti,
 		 beforeSend: function(objeto){
 			$("#resultados").html("Mensaje: Cargando...");
 		  },
@@ -255,34 +259,24 @@
 			});
 		}
 		
-			function eliminar (id)
+		function eliminar (element, id)
 		{
 			
 			$.ajax({
         type: "GET",
-        url: "./ajax/agregar_cotizador.php",
+        url: "./ajax/delete_producto_cotizador.php",
         data: "id="+id,
 		 beforeSend: function(objeto){
-			$("#resultados").html("Mensaje: Cargando...");
+			//$("#resultados").html("Mensaje: Cargando...");
 		  },
         success: function(datos){
-		$("#resultados").html(datos);
+			$(element).closest("tr").remove();
 		}
 			});
 
 		}
 		
-		$("#datos_cotizacion").submit(function(){
-		  var atencion = $("#atencion").val();
-		  var tel1 = $("#tel1").val();
-		  var empresa = $("#empresa").val();
-		  var tel2 = $("#tel2").val();
-		  var email = $("#email").val();
-		  var condiciones = $("#condiciones").val();
-		  var validez = $("#validez").val();
-		  var entrega = $("#entrega").val();
-		 VentanaCentrada('pdf/documentos/cotizacion_pdf.php? atencion='+atencion+'&tel1='+tel1+'&empresa='+empresa+'&tel2='+tel2+'&email='+email+'&condiciones='+condiciones+'&validez='+validez+'&entrega='+entrega,'Cotizacion','','1024','768','true');
-	 	});
+		
 	</script>
   </body>
 </html>
